@@ -1,6 +1,5 @@
 package com.example.ayush.assignment1;
 
-import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -42,13 +41,13 @@ public class MainActivity extends AppCompatActivity {
                 String endWord=ed3.getText().toString();
 
                 if(startWord==endWord){
-                    view1.setText("0 HOPS REQUIRED");
+                    view1.setText("0 JUMP REQUIRED");
                     return;
 
                 }
 
                 else if (startWord.length()!=3 || endWord.length()!=3){
-                    view1.setText("Wrong Input Length, Please enter correctly");
+                    view1.setText("Input is wrong, Please enter the correct input");
                     return;
                 }
 
@@ -60,15 +59,15 @@ public class MainActivity extends AppCompatActivity {
                         dictionary.add(input[i]);
                     }
 
-                    Ladder result = getShortestTransformationIterative(startWord, endWord, dictionary);
-                    //Ladder result = getShortestTransformationRecursive(startWord, endWord, dictionary);
+                    Jump result = getShortestTransformationIterative(startWord, endWord, dictionary);
+
 
                     if(result!=null){
-                        //System.out.println("Length is "+result.getLength() + " and path is :"+ result.getPath());
-                        view1.setText("Length is "+result.getLength() + " and path is :"+ result.getPath());
+
+                        view1.setText("Total Jump required is "+result.getLength() + " and path taken is :"+ result.getPath());
                     }else{
-                        //System.out.println("No Path Found");
-                        view1.setText("No Path Found");
+
+                        view1.setText("No Path Available");
                     }
                 }
             }
@@ -76,46 +75,45 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private static Ladder getShortestTransformationIterative(String startWord, String endWord, Set<String> dictionary){
+    private static Jump getShortestTransformationIterative(String startWord, String endWord, Set<String> dictionary){
         if(dictionary.contains(startWord) && dictionary.contains(endWord)){
 
             List<String> path = new LinkedList<String>();
             path.add(startWord);
 
-            //All intermediate paths are stored in queue.
-            Queue<Ladder> queue = new LinkedList<Ladder>();
-            queue.add(new Ladder(path, 1, startWord));
+            //Storing Intermediate paths in queue
+            Queue<Jump> queue = new LinkedList<Jump>();
+            queue.add(new Jump(path, 1, startWord));
 
-            //We took the startWord in consideration, So remove it from dictionary, otherwise we might pick it again.
+            //Removing startWord used and remove from dictionary, so that we don't take it again.
             dictionary.remove(startWord);
 
             //Iterate till queue is not empty or endWord is found in Path.
             while(!queue.isEmpty() && !queue.peek().equals(endWord)){
-                Ladder ladder = queue.remove();
+                Jump jump = queue.remove();
 
-                if(endWord.equals(ladder.getLastWord())){
-                    return ladder;
+                if(endWord.equals(jump.getLastWord())){
+                    return jump;
                 }
 
                 Iterator<String> i = dictionary.iterator();
                 while (i.hasNext()) {
                     String string = i.next();
 
-                    if(differByOne(string, ladder.getLastWord())){
+                    if(changeByOne(string, jump.getLastWord())){
 
-                        List<String> list = new LinkedList<String>(ladder.getPath());
+                        List<String> list = new LinkedList<String>(jump.getPath());
                         list.add(string);
 
-                        //If the words differ by one then dump it in Queue for later processsing.
-                        queue.add(new Ladder(list, ladder.getLength()+1, string));
+                        //If the words differ by one alphabet then push it in queue to process later.
+                        queue.add(new Jump(list, jump.getLength()+1, string));
 
-                        //Once the word is picked in path, we don't need that word again, So remove it from dictionary.
+                        //Once the word is traversed in path, we don't need that again, So pop it from dictionary.
                         i.remove();
                     }
                 }
             }
 
-            //Check is done to see, on what condition above loop break,
             //if break because of Queue is empty then we didn't got any path till endWord.
             //If break because of endWord matched, then we got the Path and return the path from head of Queue.
             if(!queue.isEmpty()){
@@ -125,32 +123,32 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    private static Ladder getShortestTransformationRecursive(String startWord, String endWord, Set<String> dictionary){
+    private static Jump returnShortestPath(String startWord, String endWord, Set<String> dictionary){
 
-        //All Paths from startWord to endWord will be stored in "allPath"
-        LinkedList<Ladder> allPath = new LinkedList<Ladder>();
+        //All the traversed Paths from startWord to endWord will be stored in allPath
+        LinkedList<Jump> allPath = new LinkedList<Jump>();
 
-        // Shortest path will be stored in "shortestPath"
-        Ladder shortestPath = new Ladder(null);
+        // Shortest path will be stored in shortestPath
+        Jump shortestPath = new Jump(null);
 
         List<String> path = new LinkedList<String>();
         path.add(startWord);
 
-        recursiveHelperShortest(startWord, endWord, dictionary, new Ladder(path, 1, startWord), allPath, shortestPath);
+        iterativeShortest(startWord, endWord, dictionary, new Jump(path, 1, startWord), allPath, shortestPath);
 
         return shortestPath;
     }
 
-    private static void recursiveHelperShortest(String startWord, String endWord, Set<String> dictionary, Ladder ladder, LinkedList<Ladder> allPath, Ladder shortestPath){
-        if(ladder.getLastWord().equals(endWord)){
+    private static void iterativeShortest(String startWord, String endWord, Set<String> dictionary, Jump jump, LinkedList<Jump> allPath, Jump shortestPath){
+        if(jump.getLastWord().equals(endWord)){
 
             // For storing all paths
-            allPath.add(new Ladder(new LinkedList<String>(ladder.getPath())));
+            allPath.add(new Jump(new LinkedList<String>(jump.getPath())));
 
-            //For storing the shortest path from among all paths available
-            if(shortestPath.getPath()==null || shortestPath.getPath().size()>ladder.getPath().size()){
-                shortestPath.setPath(new LinkedList<String>(ladder.getPath()));
-                shortestPath.setLength(ladder.getPath().size());
+            //store the shortest path from all paths available
+            if(shortestPath.getPath()==null || shortestPath.getPath().size()> jump.getPath().size()){
+                shortestPath.setPath(new LinkedList<String>(jump.getPath()));
+                shortestPath.setLength(jump.getPath().size());
             }
             return;
         }
@@ -159,21 +157,21 @@ public class MainActivity extends AppCompatActivity {
         while (i.hasNext()) {
             String string = i.next();
 
-            if(differByOne(string, ladder.getLastWord()) && !ladder.getPath().contains(string)){
+            if(changeByOne(string, jump.getLastWord()) && !jump.getPath().contains(string)){
 
-                List<String> path = ladder.getPath();
+                List<String> path = jump.getPath();
                 path.add(string);
 
-                //We found the new word in intermediate path, Start exploring new word from scratch again.
-                recursiveHelperShortest(startWord, endWord, dictionary, new Ladder(path, ladder.getLength()+1, string), allPath, shortestPath);
+                //New word found in intermediate path, Start visiting new word from start again.
+                iterativeShortest(startWord, endWord, dictionary, new Jump(path, jump.getLength()+1, string), allPath, shortestPath);
 
-                //After exploring new word, remove it from intermediate path.
+                //After visiting new word, remove it from intermediate path.
                 path.remove(path.size()-1);
             }
         }
     }
 
-    private static boolean differByOne(String word1, String word2){
+    private static boolean changeByOne(String word1, String word2){
         if (word1.length() != word2.length()) {
             return false;
         }
