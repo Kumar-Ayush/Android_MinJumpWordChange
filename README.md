@@ -1,5 +1,4 @@
 Jump Word Change App
-
 This Assignment is done
 
 Pre-requisites
