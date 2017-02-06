@@ -31,8 +31,6 @@ Hops/Jumps path :
 
 Output - 4
 
-The data is retrieved from the USGS service.
-http://earthquake.usgs.gov/fdsnws/event/1/
 
 Pre-requisites
 --------------
